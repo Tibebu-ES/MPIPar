@@ -1,0 +1,20 @@
+Objective --
+
+- Measure comm overhead 
+- modify the MPIPar - to insert comm time instrumenting and comm overhead measuring  statements - in the output, if 'TIME' option is included
+	functions calls inserted are
+	1. polybench_timer_start(); at the begining of the kernel, after the #pragma scop annotation
+	2. polybench_timer_stop(); at the end of the kernel, after the #pragma endscop annotation 
+	3. mpipar_comm_timer_start(); at he begining of every mpi parallel loop
+	4. mpipar_comm_timer_stop(); at the end of every mpi parallel loop
+	5. if(rank==0)mpipar_comm_overhead_print(); after the polybench_timer_stop(); function
+All are implemented in MPI_LoopTransform class,
+to be specific, 1,2,3 are implemented in a new function named - insertTimeInstrumentation();
+4 and 5 are implemented inside 'communicationCodeGeneration4NonReductionAccessedData' function 
+
+- modify the polybench.c 
+		- with POLYBENCH_TIME  flag
+		- it wont insert time instrumenting functions - reason - causing analysis problem in the mpipar --hence the functioins will be insert by the parallelizer.
+		 - the above functions, (3,4, and 5) - need to be declared and implemented in the polybench.c file.
+
+- use only the 12 polybenchs, the one parallelized accurately
